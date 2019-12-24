@@ -12,4 +12,6 @@ if [[ ! $VARNISH_STATUS == "PONG" ]]; then
 fi
 
 VCL_NAME=$($VARNISHADM vcl.list | awk '{print $4}')
-$VARNISHADM vcl.show $VCL_NAME > /root/vcl.vcl
+#$VARNISHADM vcl.show $VCL_NAME > /root/vcl.vcl
+VCL=`$VARNISHADM vcl.show $VCL_NAME`
+echo "$VCL" #use quotes
