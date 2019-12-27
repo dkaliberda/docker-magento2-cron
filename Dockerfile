@@ -3,7 +3,7 @@ MAINTAINER Dmitrij Kaliberda <dkaliberda.ua@gmail.com>
 
 ADD crontab /crontab.www-data
 ADD start.sh /start.sh
-ADD updatenodes.php /updatenodes.php
+ADD updatenodes.sh /updatenodes.sh
 
 RUN apt-get update && apt-get install -y cron rsyslog \
   libvarnishapi2 \
@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y cron rsyslog \
 
 RUN crontab -u www-data /crontab.www-data; \
   chmod +x /start.sh; \
+  chmod +x /updatenodes.sh; \
   touch /var/log/syslog; \
   touch /var/log/cron.log; \
   rm /register-host-on-redis.sh; \
