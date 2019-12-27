@@ -21,6 +21,13 @@ for (( i = 0; i < 10; i++ )); do
   sleep 1
 done
 
+# Check Redis rediness
+if ! $REDIS_CLI ping; then
+  echo "Redis not find"
+  exit 2
+fi
+
+
 unset HOSTS_ARRAY
 HOSTS_ARRAY=(`redis-cli -h clusterdata --csv HGETALL fb_apache_containers | tr -d '"' | sed 's/,/\ /g'`)
 
