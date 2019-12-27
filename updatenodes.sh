@@ -8,12 +8,18 @@ VARNISHADM="varnishadm -T varnish:6082 -S /varnish.secret"
 REDIS_CLI="redis-cli -h clusterdata"
 VCL_NAME_ACTIVE=$($VARNISHADM vcl.list | grep "active" | awk '{print $4}')
 
-
-VARNISH_STATUS=$($VARNISHADM ping | awk '{print $1}')
-if [[ ! $VARNISH_STATUS == "PONG" ]]; then
-  echo "Unable to read VCLs from Varnish"
-  exit 1
-fi
+# Check Varnish rediness
+for (( i = 0; i < 10; i++ )); do
+  VARNISH_STATUS=$($VARNISHADM ping | awk '{print $1}')
+  if [[ $VARNISH_STATUS == "PONG" ]]; then
+    echo "Varnish OK"
+    break
+  elif [[ $i = 9 ]]; then
+    echo "Unable to read VCLs from Varnish"
+    exit 1
+  fi
+  sleep 1
+done
 
 unset HOSTS_ARRAY
 HOSTS_ARRAY=(`redis-cli -h clusterdata --csv HGETALL fb_apache_containers | tr -d '"' | sed 's/,/\ /g'`)
@@ -80,8 +86,10 @@ LABEL_GEN=`cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 5 | head -n 1`
 $VARNISHADM vcl.load $LABEL_GEN /etc/varnish/generated.vcl warm
 $VARNISHADM vcl.use $LABEL_GEN
 
+sleep 3
 VCL_AVAILABLE=(`$VARNISHADM vcl.list |grep "available" | awk '{print $4}'`)
-
 for count in ${VCL_AVAILABLE[@]}; do
+  $VARNISHADM vcl.state $count cold
+  sleep 2
   $VARNISHADM vcl.discard $count
 done
