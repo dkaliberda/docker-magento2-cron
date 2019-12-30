@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y cron rsyslog \
   && rm -rf varnish*.deb
 
 RUN crontab -u www-data /crontab.www-data; \
+  echo "*/1 * * * * /updatenodes.sh" | crontab -; \
   chmod +x /start.sh; \
   chmod +x /updatenodes.sh; \
   touch /var/log/syslog; \
